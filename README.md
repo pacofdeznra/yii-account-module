@@ -6,28 +6,34 @@ One simple account module for Yii framework
 Installation
 ------------
 
-- Unpack account module under your modules directory.
+* Unpack account module under your modules directory.
 
-- Execute account/data/schema.mysql.sql script in your database.
+* Execute account/data/schema.mysql.sql script in your database.
 
-- Enable account module in your configuration:
+* Enable account module in your configuration:
 
+```
   'modules'=>array(
 		...
 		'account'=>array(
 			'defaultController'=>'account',
 		),
 	),
+```
 
-- Change your login URL to /account/account/login:
+* Change your login URL to /account/account/login:
 
+
+```
 	'user'=>array(
 		...
 		'loginUrl'=>array('/account/account/login'),
 	),
+```
 
-- Add Register, Login, Account and Logout options to your main menu:
+* Add Register, Login, Account and Logout options to your main menu:
 
+```
 	<?php $this->widget('zii.widgets.CMenu',array(
 		'items'=>array(
 			...
@@ -37,3 +43,4 @@ Installation
 			array('label'=>'Logout ('.Yii::app()->user->name.')', 'url'=>array('/account/account/logout'), 'visible'=>!Yii::app()->user->isGuest)
 		),
 	)); ?>
+```
