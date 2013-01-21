@@ -3,6 +3,10 @@ yii-account-module
 
 One simple account module for Yii framework
 
+It currently allows basic operations on an account: register, login, logout, account, change email, change password and desactivate. Next contributions could be: keep time and IP of registration and last activity, account verification by email and account administration.
+
+Demo: [http://fcofdeznra.me/account-module/](http://fcofdeznra.me/account-module/)
+
 Installation
 ------------
 
