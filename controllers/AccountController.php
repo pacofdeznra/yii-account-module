@@ -57,14 +57,25 @@ class AccountController extends Controller
 				$unhashedPassword=$model->password;
 				$model->password=$model->hashPassword($model->password);
 				$model->save(false);
-				$model->password=$unhashedPassword;
-				$model->login();
 				
 				$verification=new Verification;
 				$verification->type=Verification::TYPE_REGISTER;
 				$verification->code=$verification->generateCode();
 				$verification->account_id=$model->id;
 				$verification->save(false);
+				
+				Yii::app()->mailer->sendMIME(
+					Yii::app()->name.' <'.Yii::app()->params['adminEmail'].'>',
+					$model->email,
+					'Registration at '.Yii::app()->name,
+					'',
+					$this->renderPartial('/verification/register', array(
+						'verification'=>$verification,
+					), true)
+				);
+				
+				$model->password=$unhashedPassword;
+				$model->login();
 				
 				$this->redirect(Yii::app()->user->returnUrl);
 			}
