@@ -7,6 +7,9 @@
  * @property integer $id
  * @property string $email
  * @property string $password
+ *
+ * The followings are the available model relations:
+ * @property Verification[] $verifications
  */
 class Account extends CActiveRecord
 {
@@ -54,6 +57,18 @@ class Account extends CActiveRecord
 			array('rememberMe', 'boolean', 'on'=>'login'),
 			array('oldPassword', 'required', 'on'=>'changePassword'),
 			array('password', 'authenticate', 'on'=>'login'),
+		);
+	}
+
+	/**
+	 * @return array relational rules.
+	 */
+	public function relations()
+	{
+		// NOTE: you may need to adjust the relation name and the related
+		// class name for the relations automatically generated below.
+		return array(
+			'verifications' => array(self::HAS_MANY, 'Verification', 'account_id'),
 		);
 	}
 
