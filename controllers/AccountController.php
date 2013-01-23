@@ -59,6 +59,13 @@ class AccountController extends Controller
 				$model->save(false);
 				$model->password=$unhashedPassword;
 				$model->login();
+				
+				$verification=new Verification;
+				$verification->type=Verification::TYPE_REGISTER;
+				$verification->code=$verification->generateCode();
+				$verification->account_id=$model->id;
+				$verification->save(false);
+				
 				$this->redirect(Yii::app()->user->returnUrl);
 			}
 		}

@@ -15,6 +15,8 @@
  */
 class Verification extends CActiveRecord
 {
+	const TYPE_REGISTER = 1;
+
 	/**
 	 * Returns the static model of the specified AR class.
 	 * @param string $className active record class name.
@@ -97,5 +99,13 @@ class Verification extends CActiveRecord
 		return new CActiveDataProvider($this, array(
 			'criteria'=>$criteria,
 		));
+	}
+
+	/**
+	 * Generates a random code
+	 */
+	public function generateCode()
+	{
+		return md5(mt_rand());
 	}
 }
