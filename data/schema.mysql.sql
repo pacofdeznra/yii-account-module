@@ -5,11 +5,11 @@ CREATE TABLE account (
 );
 
 CREATE TABLE verification (
-	id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+	account_id INTEGER NOT NULL,
 	type INTEGER NOT NULL,
 	code VARCHAR(128) NOT NULL,
 	data TEXT,
-	account_id INTEGER NOT NULL,
+	PRIMARY KEY (account_id, type),
 	CONSTRAINT FK_verification_account FOREIGN KEY (account_id)
 		REFERENCES account (id) ON DELETE CASCADE ON UPDATE CASCADE
 );

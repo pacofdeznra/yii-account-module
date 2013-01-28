@@ -4,11 +4,10 @@
  * This is the model class for table "verification".
  *
  * The followings are the available columns in table 'verification':
- * @property integer $id
+ * @property integer $account_id
  * @property integer $type
  * @property string $code
  * @property string $data
- * @property integer $account_id
  *
  * The followings are the available model relations:
  * @property Account $account
@@ -43,13 +42,13 @@ class Verification extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('type, code, account_id', 'required'),
-			array('type, account_id', 'numerical', 'integerOnly'=>true),
+			array('account_id, type, code', 'required'),
+			array('account_id, type', 'numerical', 'integerOnly'=>true),
 			array('code', 'length', 'max'=>128),
 			array('data', 'safe'),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, type, code, data, account_id', 'safe', 'on'=>'search'),
+			array('account_id, type, code, data', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -71,11 +70,10 @@ class Verification extends CActiveRecord
 	public function attributeLabels()
 	{
 		return array(
-			'id' => 'ID',
+			'account_id' => 'Account',
 			'type' => 'Type',
 			'code' => 'Code',
 			'data' => 'Data',
-			'account_id' => 'Account',
 		);
 	}
 
@@ -90,11 +88,10 @@ class Verification extends CActiveRecord
 
 		$criteria=new CDbCriteria;
 
-		$criteria->compare('id',$this->id);
+		$criteria->compare('account_id',$this->account_id);
 		$criteria->compare('type',$this->type);
 		$criteria->compare('code',$this->code,true);
 		$criteria->compare('data',$this->data,true);
-		$criteria->compare('account_id',$this->account_id);
 
 		return new CActiveDataProvider($this, array(
 			'criteria'=>$criteria,
@@ -107,5 +104,13 @@ class Verification extends CActiveRecord
 	public function generateCode()
 	{
 		return md5(mt_rand());
+	}
+	
+	/**
+	 * Validates the code
+	 */
+	public function validateCode($code)
+	{
+		return $code===$this->code;
 	}
 }

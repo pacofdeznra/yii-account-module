@@ -1,7 +1,7 @@
 <html>
 	<body>
 		To complete your registration at <?php echo Yii::app()->name; ?>, please go to the following URL:<br />
-		<?php $url=Yii::app()->createAbsoluteUrl('/account/verification/register', array(
+		<?php $url=Yii::app()->createAbsoluteUrl('/account/account/confirmRegister', array(
 			'account_id'=>$verification->account_id,
 			'code'=>$verification->code,
 		)); 

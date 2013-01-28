@@ -27,6 +27,10 @@ class AccountController extends Controller
 	public function accessRules()
 	{
 		return array(
+			array('allow',  // allow all users to perform 'confirmRegister' action
+				'actions'=>array('confirmRegister'),
+				'users'=>array('*'),
+			),
 			array('allow', // allow anonymous user to perform 'register' and 'login' actions
 				'actions'=>array('register','login'),
 				'users'=>array('?'),
@@ -59,9 +63,9 @@ class AccountController extends Controller
 				$model->save(false);
 				
 				$verification=new Verification;
+				$verification->account_id=$model->id;
 				$verification->type=Verification::TYPE_REGISTER;
 				$verification->code=$verification->generateCode();
-				$verification->account_id=$model->id;
 				$verification->save(false);
 				
 				Yii::app()->mailer->sendMIME(
@@ -84,6 +88,37 @@ class AccountController extends Controller
 		$this->render('register',array(
 			'model'=>$model,
 		));
+	}
+	
+	/**
+	 * Confirms an account registration
+	 */
+	public function actionConfirmRegister($account_id, $code)
+	{
+		$verification=Verification::model()->findByPk(array(
+			'account_id'=>$account_id,
+			'type'=>Verification::TYPE_REGISTER,
+		));
+		
+		if($verification)
+		{
+			if($verification->validateCode($code))
+			{
+				$verification->delete();
+				
+				Yii::app()->user->setFlash('success','Your registration has been confirmed');
+			}
+			else
+			{
+				Yii::app()->user->setFlash('error','Your registration could not be confirmed');
+			}
+		}
+		else
+		{
+			Yii::app()->user->setFlash('notice','Your registration is already confirmed');
+		}
+		
+		$this->redirect(Yii::app()->homeUrl);
 	}
 
 	/**
