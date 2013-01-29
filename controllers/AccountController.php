@@ -31,8 +31,8 @@ class AccountController extends Controller
 				'actions'=>array('completeRegister','completeChangeEmail'),
 				'users'=>array('*'),
 			),
-			array('allow', // allow anonymous user to perform 'register' and 'login' actions
-				'actions'=>array('register','login'),
+			array('allow', // allow anonymous user to perform 'register', 'login', 'resetPassword' and 'completeResetPassword' actions
+				'actions'=>array('register','login','resetPassword','completeResetPassword'),
 				'users'=>array('?'),
 			),
 			array('allow', // allow authenticated user to perform 'logout', 'account', 'changeEmail', 'changePassword' and 'desactivate' actions
@@ -98,6 +98,8 @@ class AccountController extends Controller
 	
 	/**
 	 * Completes an account registration
+	 * @param string $account_id Account id
+	 * @param string $code Verification code
 	 */
 	public function actionCompleteRegister($account_id, $code)
 	{
@@ -211,10 +213,6 @@ class AccountController extends Controller
 						), true)
 					);
 					
-// 					$account->email=$model->email;
-// 					$account->save(false);
-// 					Yii::app()->user->name=$model->email;
-
 					// Redirect
 					Yii::app()->user->setFlash('notice','To complete the change of your email, please check your new email');
 					$this->redirect(array('account'));
@@ -251,10 +249,10 @@ class AccountController extends Controller
 				$account->email=$verification->data;
 				$account->save();
 				
+				$verification->delete();
+				
 				Yii::app()->user->name=$account->email;
 				
-				$verification->delete();
-		
 				Yii::app()->user->setFlash('success','The change of your email has been completed');
 			}
 			else
@@ -300,6 +298,116 @@ class AccountController extends Controller
 		$this->render('changePassword',array(
 			'model'=>$model,
 		));
+	}
+	
+	/**
+	 * Resets an account password
+	 */
+	public function actionResetPassword()
+	{
+		$model=new Account('resetPassword');
+		
+		if(isset($_POST['Account']))
+		{
+			$model->attributes=$_POST['Account'];
+			if($model->validate())
+			{
+				// Find account
+				$account=Account::model()->findByEmail($model->email);
+				
+				// Find verification
+				$verification=Verification::model()->findByPk(array(
+					'account_id'=>$account->id,
+					'type'=>Verification::TYPE_RESET_PASSWORD,
+				));
+					
+				// New verification if not exists
+				if(!$verification)
+				{
+					$verification=new Verification;
+					$verification->account_id=$account->id;
+					$verification->type=Verification::TYPE_RESET_PASSWORD;
+				}
+					
+				// Save verification
+				$verification->code=$verification->generateCode();
+				$verification->save(false);
+					
+				// Send verification mail
+				Yii::app()->mailer->sendMIME(
+					Yii::app()->name.' <'.Yii::app()->params['adminEmail'].'>',
+					$account->email,
+					'Reset of password at '.Yii::app()->name,
+					'',
+					$this->renderPartial('/verification/resetPassword', array(
+						'verification'=>$verification,
+					), true)
+				);
+					
+				// Redirect
+				Yii::app()->user->setFlash('notice','To complete the reset of your password, please check your email');
+				$this->redirect(Yii::app()->homeUrl);
+			}
+		}
+		
+		$this->render('resetPassword',array(
+			'model'=>$model,
+		));
+	}
+
+	/**
+	 * Completes the reset of a password
+	 * @param string $account_id Account id
+	 * @param string $code Verification code
+	 */
+	public function actionCompleteResetPassword($account_id, $code)
+	{
+		$verification=Verification::model()->findByPk(array(
+			'account_id'=>$account_id,
+			'type'=>Verification::TYPE_RESET_PASSWORD,
+		));
+		
+		if($verification)
+		{
+			if($verification->validateCode($code))
+			{
+				$model=new Account('completeResetPassword');
+				
+				if(isset($_POST['Account']))
+				{
+					$model->attributes=$_POST['Account'];
+					if($model->validate())
+					{
+						$account=$this->loadModel($account_id);
+						$account->password=$account->hashPassword($model->password);
+						$model->save(false);
+						
+						$verification->delete();
+						
+						$account->password=$model->password;
+						$account->login();
+						
+						Yii::app()->user->setFlash('success','The reset of your password has been completed');
+						$this->redirect(Yii::app()->user->returnUrl);
+					}
+				}
+				
+				$this->render('completeResetPassword',array(
+					'model'=>$model,
+				));
+				Yii::app()->end();
+			}
+			else
+			{
+				Yii::app()->user->setFlash('error','The reset of your password could not be completed');
+			}
+		}
+		else
+		{
+			Yii::app()->user->setFlash('notice','The reset of your password is already completed');
+		}
+		
+		$this->redirect(Yii::app()->homeUrl);
 	}
 
 	/**

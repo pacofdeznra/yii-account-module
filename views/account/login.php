@@ -47,3 +47,8 @@ $this->breadcrumbs=array(
 
 <?php $this->endWidget(); ?>
 </div><!-- form -->
+
+<p>
+	<?php echo CHtml::link('Need to register?',array('register')); ?>
+	<?php echo CHtml::link('Forgotten your password?',array('resetPassword')); ?>
+</p>

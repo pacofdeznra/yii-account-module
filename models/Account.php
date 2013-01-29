@@ -44,16 +44,17 @@ class Account extends CActiveRecord
 	public function rules()
 	{
 		return array(
-			array('email', 'required', 'on'=>array('register','login','changeEmail')),
+			array('email', 'required', 'on'=>array('register','login','changeEmail','resetPassword')),
 			array('email', 'length', 'max'=>128, 'on'=>array('register','changeEmail')),
 			array('email', 'email', 'on'=>array('register','changeEmail')),
 			array('email', 'unique', 'on'=>array('register','changeEmail')),
-			array('password', 'required', 'on'=>array('register','login','changeEmail','changePassword','desactivate')),
-			array('password', 'length', 'min'=>6, 'max'=>128, 'on'=>array('register','changePassword')),
+			array('email', 'exist', 'on'=>'resetPassword'),
+			array('password', 'required', 'on'=>array('register','login','changeEmail','changePassword','completeResetPassword','desactivate')),
+			array('password', 'length', 'min'=>6, 'max'=>128, 'on'=>array('register','changePassword','completeResetPassword')),
 			array('confirmEmail', 'required', 'on'=>array('register','changeEmail')),
 			array('confirmEmail', 'compare', 'compareAttribute'=>'email', 'on'=>array('register','changeEmail')),
-			array('confirmPassword', 'required', 'on'=>array('register','changePassword')),
-			array('confirmPassword', 'compare', 'compareAttribute'=>'password', 'on'=>array('register','changePassword')),
+			array('confirmPassword', 'required', 'on'=>array('register','changePassword','completeResetPassword')),
+			array('confirmPassword', 'compare', 'compareAttribute'=>'password', 'on'=>array('register','changePassword','completeResetPassword')),
 			array('rememberMe', 'boolean', 'on'=>'login'),
 			array('oldPassword', 'required', 'on'=>'changePassword'),
 			array('password', 'authenticate', 'on'=>'login'),
@@ -125,5 +126,14 @@ class Account extends CActiveRecord
 		}
 		else
 			return false;
+	}
+	
+	/**
+	 * Finds an account by email
+	 * @param string $email The email
+	 */
+	public function findByEmail($email)
+	{
+		return $this->find('LOWER(email)=?',array(strtolower($email)));
 	}
 }
