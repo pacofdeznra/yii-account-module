@@ -3,14 +3,35 @@ yii-account-module
 
 One simple account module for Yii framework
 
-It currently allows basic operations on an account: register, login, logout, account, change email, change password and desactivate. Next contributions could be: keep time and IP of registration and last activity, account verification by email and account administration.
+It allows basic operations on an account, see [changelog](#changelog) and [roadmap](#roadmap) for current and next features.
 
 Demo: [http://fcofdeznra.me/account-module/](http://fcofdeznra.me/account-module/)
+
+Changelog
+---------
+
+###v0.2 (Jan 29, 2013)
+
+* Requires [mail extension](https://github.com/fcofdeznra/yii-mail-extension).
+* Register and change email are verified by email.
+* Reset password.
+
+###v0.1 (Jan 18, 2013)
+
+* Register, login, logout, account, change email, change password and desactivate.
+
+Roadmap
+-------
+
+* Keep time and IP of registration and last activity.
+* Account administration.
 
 Installation
 ------------
 
 * Unpack account module under your modules directory.
+
+* Unpack [mail extension](https://github.com/fcofdeznra/yii-mail-extension) under your extensions directory and configure it.
 
 * Execute account/data/schema.mysql.sql script in your database.
 
@@ -47,4 +68,12 @@ Installation
 			array('label'=>'Logout ('.Yii::app()->user->name.')', 'url'=>array('/account/account/logout'), 'visible'=>!Yii::app()->user->isGuest)
 		),
 	)); ?>
+```
+
+* Show user flashes in your main layout:
+
+```
+    <?php foreach(Yii::app()->user->getFlashes() as $key => $message) {
+        echo '<div class="flash-' . $key . '">' . $message . "</div>\n";
+    } ?>
 ```
