@@ -380,7 +380,7 @@ class AccountController extends Controller
 					{
 						$account=$this->loadModel($account_id);
 						$account->password=$account->hashPassword($model->password);
-						$model->save(false);
+						$account->save(false);
 						
 						$verification->delete();
 						
