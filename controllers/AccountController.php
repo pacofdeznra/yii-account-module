@@ -27,8 +27,8 @@ class AccountController extends Controller
 	public function accessRules()
 	{
 		return array(
-			array('allow',  // allow all users to perform 'completeRegister' action
-				'actions'=>array('completeRegister'),
+			array('allow',  // allow all users to perform 'completeRegister' and 'completeChangeEmail' actions
+				'actions'=>array('completeRegister','completeChangeEmail'),
 				'users'=>array('*'),
 			),
 			array('allow', // allow anonymous user to perform 'register' and 'login' actions
@@ -181,9 +181,42 @@ class AccountController extends Controller
 				$account=$this->loadModel(Yii::app()->user->id);
 				if($account->validatePassword($model->password))
 				{
-					$account->email=$model->email;
-					$account->save(false);
-					Yii::app()->user->name=$model->email;
+					// Find verification
+					$verification=Verification::model()->findByPk(array(
+						'account_id'=>$account->id,
+						'type'=>Verification::TYPE_CHANGE_EMAIL,
+					));
+					
+					// New verification if not exists
+					if(!$verification)
+					{
+						$verification=new Verification;
+						$verification->account_id=$account->id;
+						$verification->type=Verification::TYPE_CHANGE_EMAIL;
+					}
+					
+					// Save verification
+					$verification->code=$verification->generateCode();
+					$verification->data=$model->email;
+					$verification->save(false);
+					
+					// Send verification mail
+					Yii::app()->mailer->sendMIME(
+						Yii::app()->name.' <'.Yii::app()->params['adminEmail'].'>',
+						$model->email,
+						'Change of email at '.Yii::app()->name,
+						'',
+						$this->renderPartial('/verification/changeEmail', array(
+							'verification'=>$verification,
+						), true)
+					);
+					
+// 					$account->email=$model->email;
+// 					$account->save(false);
+// 					Yii::app()->user->name=$model->email;
+
+					// Redirect
+					Yii::app()->user->setFlash('notice','To complete the change of your email, please check your new email');
 					$this->redirect(array('account'));
 				}
 				else
@@ -196,6 +229,45 @@ class AccountController extends Controller
 		$this->render('changeEmail',array(
 			'model'=>$model,
 		));
+	}
+	
+	/**
+	 * Completes the change of an email
+	 * @param string $account_id Account id
+	 * @param string $code Verification code
+	 */
+	public function actionCompleteChangeEmail($account_id, $code)
+	{
+		$verification=Verification::model()->findByPk(array(
+			'account_id'=>$account_id,
+			'type'=>Verification::TYPE_CHANGE_EMAIL,
+		));
+		
+		if($verification)
+		{
+			if($verification->validateCode($code))
+			{
+				$account=$this->loadModel($account_id);
+				$account->email=$verification->data;
+				$account->save();
+				
+				Yii::app()->user->name=$account->email;
+				
+				$verification->delete();
+		
+				Yii::app()->user->setFlash('success','The change of your email has been completed');
+			}
+			else
+			{
+				Yii::app()->user->setFlash('error','The change of your email could not be completed');
+			}
+		}
+		else
+		{
+			Yii::app()->user->setFlash('notice','The change of your email is already completed');
+		}
+		
+		$this->redirect(Yii::app()->homeUrl);
 	}
 
 	/**

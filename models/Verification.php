@@ -15,6 +15,7 @@
 class Verification extends CActiveRecord
 {
 	const TYPE_REGISTER = 1;
+	const TYPE_CHANGE_EMAIL = 2;
 
 	/**
 	 * Returns the static model of the specified AR class.
