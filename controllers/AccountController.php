@@ -27,8 +27,8 @@ class AccountController extends Controller
 	public function accessRules()
 	{
 		return array(
-			array('allow',  // allow all users to perform 'confirmRegister' action
-				'actions'=>array('confirmRegister'),
+			array('allow',  // allow all users to perform 'completeRegister' action
+				'actions'=>array('completeRegister'),
 				'users'=>array('*'),
 			),
 			array('allow', // allow anonymous user to perform 'register' and 'login' actions
@@ -58,16 +58,19 @@ class AccountController extends Controller
 			$model->attributes=$_POST['Account'];
 			if($model->validate())
 			{
+				// Create account
 				$unhashedPassword=$model->password;
 				$model->password=$model->hashPassword($model->password);
 				$model->save(false);
 				
+				// Create verification
 				$verification=new Verification;
 				$verification->account_id=$model->id;
 				$verification->type=Verification::TYPE_REGISTER;
 				$verification->code=$verification->generateCode();
 				$verification->save(false);
 				
+				// Send verification mail
 				Yii::app()->mailer->sendMIME(
 					Yii::app()->name.' <'.Yii::app()->params['adminEmail'].'>',
 					$model->email,
@@ -78,9 +81,12 @@ class AccountController extends Controller
 					), true)
 				);
 				
+				// Login
 				$model->password=$unhashedPassword;
 				$model->login();
 				
+				// Redirect
+				Yii::app()->user->setFlash('notice','To complete your registration, please check your email');
 				$this->redirect(Yii::app()->user->returnUrl);
 			}
 		}
@@ -91,9 +97,9 @@ class AccountController extends Controller
 	}
 	
 	/**
-	 * Confirms an account registration
+	 * Completes an account registration
 	 */
-	public function actionConfirmRegister($account_id, $code)
+	public function actionCompleteRegister($account_id, $code)
 	{
 		$verification=Verification::model()->findByPk(array(
 			'account_id'=>$account_id,
@@ -106,16 +112,16 @@ class AccountController extends Controller
 			{
 				$verification->delete();
 				
-				Yii::app()->user->setFlash('success','Your registration has been confirmed');
+				Yii::app()->user->setFlash('success','Your registration has been completed');
 			}
 			else
 			{
-				Yii::app()->user->setFlash('error','Your registration could not be confirmed');
+				Yii::app()->user->setFlash('error','Your registration could not be completed');
 			}
 		}
 		else
 		{
-			Yii::app()->user->setFlash('notice','Your registration is already confirmed');
+			Yii::app()->user->setFlash('notice','Your registration is already completed');
 		}
 		
 		$this->redirect(Yii::app()->homeUrl);
