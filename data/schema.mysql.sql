@@ -2,7 +2,8 @@ CREATE TABLE account (
 	id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
 	email VARCHAR(128) NOT NULL,
 	password VARCHAR(128) NOT NULL
-);
+)
+ENGINE = InnoDB;
 
 CREATE TABLE verification (
 	account_id INTEGER NOT NULL,
@@ -12,5 +13,6 @@ CREATE TABLE verification (
 	PRIMARY KEY (account_id, type),
 	CONSTRAINT FK_verification_account FOREIGN KEY (account_id)
 		REFERENCES account (id) ON DELETE CASCADE ON UPDATE CASCADE
-);
+)
+ENGINE = InnoDB;
 
