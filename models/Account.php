@@ -32,7 +32,7 @@ class Account extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return 'account';
+		return '{{account}}';
 	}
 
 	/**
