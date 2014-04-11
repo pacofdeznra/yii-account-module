@@ -30,7 +30,7 @@ class Verification extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return 'verification';
+		return '{{verification}}';
 	}
 
 	/**

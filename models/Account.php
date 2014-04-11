@@ -32,7 +32,7 @@ class Account extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return 'account';
+		return '{{account}}';
 	}
 
 	/**
@@ -65,7 +65,7 @@ class Account extends CActiveRecord
 	 */
 	public function hashPassword($password)
 	{
-		return crypt($password);
+		return CPasswordHelper::hashPassword($password);
 	}
 
 	/**
@@ -89,7 +89,7 @@ class Account extends CActiveRecord
 	 */
 	public function validatePassword($password)
 	{
-		return crypt($password,$this->password)===$this->password;
+		return CPasswordHelper::verifyPassword($password,$this->password);
 	}
 
 	/**
